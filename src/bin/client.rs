@@ -6,7 +6,7 @@ use tokio_websockets::{ClientBuilder, Message};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let uri = "ws://127.0.0.1:2000";
+    let uri = "ws://127.0.0.1:8080";
     let (mut ws_stream, _) = ClientBuilder::<'_>::from_uri(Uri::from_static(uri)).connect().await?;
 
     let stdin = tokio::io::stdin();
