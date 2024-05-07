@@ -5,12 +5,15 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio_websockets::{ClientBuilder, Message};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let uri = "ws://127.0.0.1:8080";
-    let (mut ws_stream, _) = ClientBuilder::<'_>::from_uri(Uri::from_static(uri)).connect().await?;
-
+async fn main() -> Result<(), tokio_websockets::Error> {
+    let (mut ws_stream, _) =
+        ClientBuilder::from_uri(Uri::from_static("ws://127.0.0.1:8080"))
+            .connect()
+            .await?;
+    
     let stdin = tokio::io::stdin();
     let mut stdin = BufReader::new(stdin).lines();
+    
 
     loop {
         tokio::select! {
@@ -18,9 +21,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match incoming {
                     Some(Ok(msg)) => {
                         if let Some(text) = msg.as_text() {
-                            println!("Server broadcast: {}", text);
+                            println!("{}", text);
                         }
-                    }
+                    },
                     Some(Err(err)) => return Err(err.into()),
                     None => return Ok(()),
                 }
@@ -29,13 +32,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match res {
                     Ok(None) => return Ok(()),
                     Ok(Some(line)) => {
-                        if let Err(err) = ws_stream.send(Message::text(line)).await {
-                            return Err(err.into());
-                        }
-                    }
+                        println!("Sending message to server: {}", line);
+                        ws_stream.send(Message::text(line)).await?;
+                    },
                     Err(err) => return Err(err.into()),
                 }
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
